@@ -1,0 +1,11 @@
+# render.yaml
+
+services:
+  - type: web
+    name: fastapi-app
+    env: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
