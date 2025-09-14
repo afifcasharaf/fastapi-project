@@ -1,23 +1,37 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from typing import List
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
-# --- Helper Function ---
+# ✅ Allow requests from frontend (e.g., http://localhost:8080)
+origins = [
+    "http://localhost:8080",  # Local frontend
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # You can use ["*"] to allow all, but it's not recommended for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# The rest of your code continues...
+
+# Sample: generate_customer_id and models
 def generate_customer_id(user_id: int) -> str:
     return f"CUST-{user_id:04d}"
 
-# --- Attachment Model ---
 class Attachment(BaseModel):
     id: str
     name: str
-    size: int  # in bytes
+    size: int
     type: str
     url: str
 
-# --- Message Model ---
 class Message(BaseModel):
     id: str
     customerId: str
@@ -32,7 +46,6 @@ class Message(BaseModel):
     thread: List[str]
     attachments: List[Attachment]
 
-# --- API Route ---
 @app.get("/message", response_model=Message)
 def get_message():
     customer_id = generate_customer_id(123)
@@ -42,7 +55,7 @@ def get_message():
         "subject": "Urgent: Need Boeing 737-800 Landing Gear Assembly",
         "preview": "We require immediate delivery of landing gear assembly for our Boeing 737-800 fleet...",
         "body": (
-            "Dear Team,\n\n"
+            "Dear AirParts,\n\n"
             "We require immediate delivery of landing gear assembly for our Boeing 737-800 fleet. "
             "This is a critical requirement as we have scheduled maintenance for 3 aircraft next week.\n\n"
             "Part Numbers Required:\n"
@@ -53,7 +66,7 @@ def get_message():
             "Best regards,\n"
             "Skyline Airlines Procurement"
         ),
-        "timestamp": datetime(2024, 12, 20, 10, 30, 0),
+        "timestamp": datetime(2024, 12, 20, 10, 30),
         "from": customer_id,
         "to": "sales@aeroparts.com",
         "status": "unread",
